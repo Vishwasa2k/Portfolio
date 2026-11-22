@@ -1,0 +1,44 @@
+[
+  {
+    "slug": "automotive",
+    "title": "Automotive",
+    "group": "themes",
+    "description": "Cars, details and light.",
+    "cover": "auto-01"
+  },
+  {
+    "slug": "formula-student",
+    "title": "Formula Student",
+    "group": "themes",
+    "description": "Building and racing the car.",
+    "cover": "fs-01"
+  },
+  {
+    "slug": "celebrations",
+    "title": "Celebrations",
+    "group": "themes",
+    "description": "Family, festivals and ethnic wear.",
+    "cover": "cel-01"
+  },
+  {
+    "slug": "gothenburg",
+    "title": "Gothenburg",
+    "group": "places",
+    "description": "",
+    "cover": "got-01"
+  },
+  {
+    "slug": "berlin",
+    "title": "Berlin",
+    "group": "places",
+    "description": "",
+    "cover": "ber-01"
+  },
+  {
+    "slug": "bangalore",
+    "title": "Bangalore",
+    "group": "places",
+    "description": "",
+    "cover": "blr-01"
+  }
+]

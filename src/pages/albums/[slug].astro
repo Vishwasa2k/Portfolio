@@ -1,0 +1,21 @@
+---
+import Base from '../../layouts/Base.astro';
+import Gallery from '../../components/Gallery.astro';
+import { albums, photosInAlbum } from '../../lib/photos';
+
+export function getStaticPaths() {
+  return albums.map((album) => ({ params: { slug: album.slug }, props: { album } }));
+}
+const { album } = Astro.props;
+const list = photosInAlbum(album.slug);
+---
+<Base title={album.title} description={album.description}>
+  <div class="wrap">
+    <header class="page-head">
+      <a class="eyebrow" href="/#albums">&larr; Albums</a>
+      <h1>{album.title}</h1>
+      {album.description && <p>{album.description}</p>}
+    </header>
+    <Gallery photos={list} />
+  </div>
+</Base>

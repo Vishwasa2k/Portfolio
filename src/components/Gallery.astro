@@ -1,0 +1,100 @@
+---
+import { imageUrl, mediumLabel, captionFor, type Photo } from '../lib/photos';
+
+interface Props { photos: Photo[]; showFilter?: boolean; }
+const { photos, showFilter = true } = Astro.props;
+
+const filmCount = photos.filter((p) => p.medium === 'film').length;
+const digitalCount = photos.length - filmCount;
+const hasBoth = filmCount > 0 && digitalCount > 0;
+---
+{showFilter && hasBoth && (
+  <div class="filter" role="group" aria-label="Filter by medium">
+    <button type="button" data-filter="all" aria-pressed="true">All<span class="count">{photos.length}</span></button>
+    <button type="button" data-filter="film" aria-pressed="false">Film<span class="count">{filmCount}</span></button>
+    <button type="button" data-filter="digital" aria-pressed="false">Digital<span class="count">{digitalCount}</span></button>
+  </div>
+)}
+
+<div class="gallery" id="gallery">
+  {photos.map((p) => (
+    <figure
+      class:list={['item', { 'is-film': p.medium === 'film' }]}
+      data-medium={p.medium}
+      data-src={imageUrl(p.file)}
+      data-title={p.title ?? ''}
+      data-cap={captionFor(p)}
+      data-label={mediumLabel(p)}
+    >
+      <button type="button" aria-label={`Open ${p.title ?? 'photo'}`}>
+        <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" decoding="async" />
+        {p.medium === 'film' && <span class="badge">{mediumLabel(p)}</span>}
+      </button>
+      {p.medium === 'film' && captionFor(p) && <figcaption class="film-cap">{captionFor(p)}</figcaption>}
+    </figure>
+  ))}
+</div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+  <button class="lb-btn lb-close" type="button" aria-label="Close">&times;</button>
+  <button class="lb-btn lb-prev" type="button" aria-label="Previous">&#8249;</button>
+  <button class="lb-btn lb-next" type="button" aria-label="Next">&#8250;</button>
+  <div class="lb-inner">
+    <div class="lb-img"><img id="lb-img" alt="" /></div>
+    <div class="lb-cap" id="lb-cap"></div>
+  </div>
+</dialog>
+
+<script>
+  const items = Array.from(document.querySelectorAll<HTMLElement>('#gallery .item'));
+  const dlg = document.getElementById('lightbox') as HTMLDialogElement;
+  const lbImg = document.getElementById('lb-img') as HTMLImageElement;
+  const lbCap = document.getElementById('lb-cap') as HTMLElement;
+  let current = 0;
+
+  const visible = () => items.filter((el) => !el.hidden);
+
+  function show(el: HTMLElement) {
+    current = visible().indexOf(el);
+    lbImg.src = el.dataset.src ?? '';
+    lbImg.alt = el.dataset.title ?? '';
+    const isFilm = el.dataset.medium === 'film';
+    const parts = [el.dataset.title, isFilm ? `${el.dataset.label ?? ''} ${el.dataset.cap ? '- ' + el.dataset.cap : ''}` : el.dataset.cap].filter((s) => s && s.trim());
+    lbCap.innerHTML = '';
+    parts.forEach((txt, i) => {
+      const span = document.createElement('span');
+      if (isFilm && i === parts.length - 1) span.className = 'film';
+      span.textContent = (i ? '   ' : '') + txt!.trim();
+      lbCap.appendChild(span);
+    });
+  }
+
+  function step(dir: number) {
+    const v = visible();
+    if (!v.length) return;
+    current = (current + dir + v.length) % v.length;
+    show(v[current]);
+  }
+
+  items.forEach((el) => el.querySelector('button')?.addEventListener('click', () => { show(el); dlg.showModal(); }));
+  dlg.querySelector('.lb-close')?.addEventListener('click', () => dlg.close());
+  dlg.querySelector('.lb-prev')?.addEventListener('click', () => step(-1));
+  dlg.querySelector('.lb-next')?.addEventListener('click', () => step(1));
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  document.addEventListener('keydown', (e) => {
+    if (!dlg.open) return;
+    if (e.key === 'ArrowLeft') step(-1);
+    if (e.key === 'ArrowRight') step(1);
+  });
+
+  // Film / digital filter
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter button');
+  function applyFilter(kind: string) {
+    items.forEach((el) => { el.hidden = kind !== 'all' && el.dataset.medium !== kind; });
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === kind)));
+    history.replaceState(null, '', kind === 'all' ? location.pathname : `#${kind}`);
+  }
+  buttons.forEach((b) => b.addEventListener('click', () => applyFilter(b.dataset.filter ?? 'all')));
+  const initial = location.hash.replace('#', '');
+  if (initial === 'film' || initial === 'digital') applyFilter(initial);
+</script>

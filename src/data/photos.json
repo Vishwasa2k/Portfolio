@@ -1,0 +1,142 @@
+[
+  {
+    "id": "auto-01",
+    "file": "sample/a.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "automotive",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder - replace me",
+    "featured": true,
+    "camera": "Nikon"
+  },
+  {
+    "id": "auto-02",
+    "file": "sample/b.jpg",
+    "w": 1067,
+    "h": 1600,
+    "album": "automotive",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder - film frame",
+    "format": "35mm",
+    "stock": "Kodacolor 100",
+    "camera": "Nikon F3 + 50mm f/1.8"
+  },
+  {
+    "id": "fs-01",
+    "file": "sample/c.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "formula-student",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder",
+    "featured": true
+  },
+  {
+    "id": "fs-02",
+    "file": "sample/d.jpg",
+    "w": 1200,
+    "h": 1200,
+    "album": "formula-student",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder - film frame",
+    "format": "120",
+    "stock": "Velvia 50"
+  },
+  {
+    "id": "cel-01",
+    "file": "sample/e.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "celebrations",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder",
+    "featured": true
+  },
+  {
+    "id": "cel-02",
+    "file": "sample/f.jpg",
+    "w": 1067,
+    "h": 1600,
+    "album": "celebrations",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder"
+  },
+  {
+    "id": "got-01",
+    "file": "sample/g.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "gothenburg",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder - film frame",
+    "format": "35mm",
+    "stock": "Double-X",
+    "camera": "Nikon F3 + 50mm f/1.8",
+    "featured": true
+  },
+  {
+    "id": "got-02",
+    "file": "sample/h.jpg",
+    "w": 1600,
+    "h": 1200,
+    "album": "gothenburg",
+    "tags": [
+      "automotive"
+    ],
+    "medium": "digital",
+    "title": "Placeholder"
+  },
+  {
+    "id": "ber-01",
+    "file": "sample/a.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "berlin",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder - film frame",
+    "format": "35mm",
+    "stock": "Cinestill 800T",
+    "camera": "Nikon F3 + 50mm f/1.8"
+  },
+  {
+    "id": "ber-02",
+    "file": "sample/c.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "berlin",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder"
+  },
+  {
+    "id": "blr-01",
+    "file": "sample/e.jpg",
+    "w": 1600,
+    "h": 1067,
+    "album": "bangalore",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder"
+  },
+  {
+    "id": "blr-02",
+    "file": "sample/b.jpg",
+    "w": 1067,
+    "h": 1600,
+    "album": "bangalore",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder - film frame",
+    "format": "35mm",
+    "stock": "Agfa 400"
+  }
+]
