@@ -1,8 +1,9 @@
 ---
-import { albums } from '../lib/photos';
+import { visibleAlbums } from '../lib/photos';
 import site from '../data/site.json';
 
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const albums = visibleAlbums();
 const photoAlbums = albums.filter((a) => a.group !== 'video');
 const videoAlbums = albums.filter((a) => a.group === 'video');
 const inGroup = (list: typeof albums) => list.some((a) => path === `/albums/${a.slug}`);

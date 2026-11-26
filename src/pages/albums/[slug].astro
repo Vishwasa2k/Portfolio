@@ -1,10 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Gallery from '../../components/Gallery.astro';
-import { albums, photosInAlbum } from '../../lib/photos';
+import { visibleAlbums, photosInAlbum } from '../../lib/photos';
 
 export function getStaticPaths() {
-  return albums.map((album) => ({ params: { slug: album.slug }, props: { album } }));
+  return visibleAlbums().map((album) => ({ params: { slug: album.slug }, props: { album } }));
 }
 const { album } = Astro.props;
 const list = photosInAlbum(album.slug);
