@@ -1,17 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
+import { imageUrl } from '../lib/photos';
 import site from '../data/site.json';
+
+const s = site as Record<string, string>;
+const portrait = s.portrait ? imageUrl(s.portrait) : '';
 ---
-<Base title="About">
-  <div class="wrap">
-    <header class="page-head">
-      <p class="eyebrow">About</p>
-      <h1>{site.name}</h1>
-    </header>
-    <div class="about">
+<Base title="About / Contact">
+  <h1 class="page-title">About / Contact</h1>
+  <div class:list={['about', { 'has-portrait': !!portrait }]}>
+    {portrait && <img src={portrait} alt={site.name} />}
+    <div>
       <p>{site.about}</p>
-      <p>
-        Get in touch: <a href={`mailto:${site.email}`}>{site.email}</a>
+      <p class="contact-line">
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        {s.instagram && <> &nbsp;/&nbsp; <a href={s.instagram} target="_blank" rel="noopener">Instagram</a></>}
+        {s.behance && <> &nbsp;/&nbsp; <a href={s.behance} target="_blank" rel="noopener">Behance</a></>}
       </p>
     </div>
   </div>

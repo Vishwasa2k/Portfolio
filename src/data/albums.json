@@ -2,43 +2,61 @@
   {
     "slug": "automotive",
     "title": "Automotive",
-    "group": "themes",
+    "group": "photo",
     "description": "Cars, details and light.",
     "cover": "auto-01"
   },
   {
     "slug": "formula-student",
     "title": "Formula Student",
-    "group": "themes",
+    "group": "photo",
     "description": "Building and racing the car.",
     "cover": "fs-01"
   },
   {
     "slug": "celebrations",
     "title": "Celebrations",
-    "group": "themes",
+    "group": "photo",
     "description": "Family, festivals and ethnic wear.",
     "cover": "cel-01"
   },
   {
     "slug": "gothenburg",
     "title": "Gothenburg",
-    "group": "places",
+    "group": "photo",
     "description": "",
     "cover": "got-01"
   },
   {
     "slug": "berlin",
     "title": "Berlin",
-    "group": "places",
+    "group": "photo",
     "description": "",
     "cover": "ber-01"
   },
   {
     "slug": "bangalore",
     "title": "Bangalore",
-    "group": "places",
+    "group": "photo",
     "description": "",
     "cover": "blr-01"
+  },
+  {
+    "slug": "renders",
+    "title": "3D Renders",
+    "group": "video",
+    "description": "Motorsport and product renders made in Blender."
+  },
+  {
+    "slug": "logo-animations",
+    "title": "Logo Animations",
+    "group": "video",
+    "description": "Intro and logo reveal animations."
+  },
+  {
+    "slug": "reels",
+    "title": "Reels & Edits",
+    "group": "video",
+    "description": "Short films, reels and edits."
   }
 ]

@@ -1,67 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
-import { albums, photos, photosInAlbum, coverFor, filmPhotos, imageUrl } from '../lib/photos';
+import Gallery from '../components/Gallery.astro';
+import { homePhotos } from '../lib/photos';
 import site from '../data/site.json';
-
-const hero = photos.find((p) => p.featured) ?? photos[0];
-const groups = [
-  { key: 'themes', label: 'Themes' },
-  { key: 'places', label: 'Places' },
-] as const;
-const film = filmPhotos().slice(0, 8);
 ---
 <Base>
-  {hero && (
-    <section class="hero">
-      <img src={imageUrl(hero.file)} width={hero.w} height={hero.h} alt={hero.title ?? ''} fetchpriority="high" />
-      <div class="hero-text">
-        <h1>{site.name}</h1>
-        <p>{site.tagline}</p>
-      </div>
-    </section>
-  )}
-
-  <section class="section wrap" id="albums">
-    <div class="section-head"><h2>Albums</h2></div>
-    {groups.map((g) => {
-      const list = albums.filter((a) => a.group === g.key);
-      return list.length > 0 && (
-        <>
-          <p class="eyebrow group-title">{g.label}</p>
-          <div class="cards">
-            {list.map((a) => {
-              const cover = coverFor(a);
-              const count = photosInAlbum(a.slug).length;
-              return (
-                <a class="card" href={`/albums/${a.slug}`}>
-                  {cover && <img src={imageUrl(cover.file)} width={cover.w} height={cover.h} alt="" loading="lazy" />}
-                  <div class="card-label">
-                    <h3>{a.title}</h3>
-                    <span>{count} PHOTOS</span>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
-        </>
-      );
-    })}
-  </section>
-
-  {film.length > 0 && (
-    <section class="section wrap">
-      <div class="section-head">
-        <h2>On film</h2>
-        <a href="/film">All film photos &rarr;</a>
-      </div>
-      <div class="film-strip">
-        {film.map((p) => (
-          <a href="/film">
-            <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" />
-            <span class="badge">{p.format?.toUpperCase() ?? 'FILM'}</span>
-          </a>
-        ))}
-      </div>
-    </section>
-  )}
+  <h1 class="sr-only">{site.name} - {site.tagline}</h1>
+  <Gallery photos={homePhotos()} showFilter={false} />
 </Base>
