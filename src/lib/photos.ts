@@ -1,5 +1,6 @@
 import photosData from '../data/photos.json';
 import albumsData from '../data/albums.json';
+import site from '../data/site.json';
 
 export type Medium = 'film' | 'digital';
 
@@ -35,7 +36,8 @@ export interface Album {
 export const photos = photosData as Photo[];
 export const albums = albumsData as Album[];
 
-const base = (import.meta.env.PUBLIC_IMAGE_BASE ?? '').replace(/\/$/, '');
+/** Where photos are served from: PUBLIC_IMAGE_BASE if set, otherwise "imageBase" in site.json. */
+const base = (import.meta.env.PUBLIC_IMAGE_BASE || (site as Record<string, string>).imageBase || '').replace(/\/$/, '');
 
 export const imageUrl = (file: string) => `${base}/${file.replace(/^\//, '')}`;
 
@@ -64,8 +66,9 @@ export const embedUrl = (url: string) => {
   return url;
 };
 
-/** Items shown on the home page: the ones marked featured, in manifest order (falls back to all). */
+/** Home page: photos marked featured, in manifest order (falls back to all photos). Videos never show here. */
 export const homePhotos = () => {
-  const f = photos.filter((p) => p.featured);
-  return f.length ? f : photos;
+  const stills = photos.filter((p) => !isVideo(p));
+  const f = stills.filter((p) => p.featured);
+  return f.length ? f : stills;
 };
