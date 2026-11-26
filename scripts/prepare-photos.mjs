@@ -4,7 +4,8 @@
 //   npm run photos                      reads from the incoming/ folder in this project
 //   npm run photos -- "D:\Exports"      or reads straight from any folder on your PC
 //
-// Every top-level folder becomes an album, named after the folder:
+// Every folder inside it becomes an album, named after the folder. You can also point at a
+// single album folder (npm run photos -- "D:\Exports\Portraits").
 //   Exports\Formula Student\DSC_0412.jpg            -> album "Formula Student", digital
 //   Exports\Berlin\Film\Cinestill 800T\0001.jpg     -> album "Berlin", film, stock "Cinestill 800T"
 //   Exports\Berlin\Portra 400\scan12.jpg             -> film too (a film stock name in the path counts)
@@ -42,11 +43,22 @@ const albums = JSON.parse(fs.readFileSync(ALBUMS, 'utf8'));
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
   d.isDirectory() ? walk(path.join(dir, d.name)) : [path.join(dir, d.name)]);
 
+// Which folders are albums? Normally every folder inside IN. But if IN itself holds photos,
+// or is named like an existing album (e.g. you pointed at "...\Portraits"), IN is the album.
+const knownSlugs = new Set(albums.map((a) => a.slug));
+const isImage = (f) => EXT.has(path.extname(f).toLowerCase());
+const inName = path.basename(path.resolve(IN));
+const topEntries = fs.readdirSync(IN, { withFileTypes: true });
+const singleAlbum = topEntries.some((d) => d.isFile() && isImage(d.name)) || knownSlugs.has(slugify(inName));
+const albumRoots = singleAlbum
+  ? [[inName, IN]]
+  : topEntries.filter((d) => d.isDirectory()).map((d) => [d.name, path.join(IN, d.name)]);
+if (singleAlbum) console.log(`Importing "${inName}" as one album.\n`);
+
 // Gather jobs
 const jobs = [];
 let rawSkipped = 0;
-for (const folder of fs.readdirSync(IN, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
-  const albumDir = path.join(IN, folder);
+for (const [folder, albumDir] of albumRoots) {
   for (const file of walk(albumDir).sort()) {
     const ext = path.extname(file).toLowerCase();
     if (!EXT.has(ext)) { if (/\.(nef|cr2|cr3|arw|raf|dng|orf|rw2)$/i.test(file)) rawSkipped++; continue; }
@@ -62,7 +74,11 @@ for (const folder of fs.readdirSync(IN, { withFileTypes: true }).filter((d) => d
   }
 }
 if (!jobs.length) {
-  console.log(`No photos found in ${IN}.${rawSkipped ? ` (${rawSkipped} RAW files skipped - export JPEGs from Lightroom first.)` : ''}`);
+  console.log(`No photos found in ${IN}.`);
+  if (rawSkipped) console.log(`${rawSkipped} RAW files were skipped - export JPEGs from Lightroom first.`);
+  const exts = {};
+  for (const f of walk(IN)) { const e = path.extname(f).toLowerCase() || '(none)'; exts[e] = (exts[e] ?? 0) + 1; }
+  console.log('File types found:', Object.keys(exts).length ? exts : 'none');
   process.exit(0);
 }
 
