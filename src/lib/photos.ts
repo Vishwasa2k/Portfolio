@@ -48,6 +48,9 @@ export const isFilm = (p: Photo) => !isVideo(p) && p.medium === 'film';
 export const photosInAlbum = (slug: string) =>
   photos.filter((p) => p.album === slug || p.tags.includes(slug));
 
+/** Albums that have at least one photo or video (empty ones stay out of the menu). */
+export const visibleAlbums = () => albums.filter((a) => photosInAlbum(a.slug).length > 0);
+
 export const coverFor = (album: Album) =>
   photos.find((p) => p.id === album.cover) ?? photosInAlbum(album.slug)[0];
 
