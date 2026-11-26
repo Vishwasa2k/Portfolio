@@ -49,6 +49,42 @@
     "cover": "blr-01"
   },
   {
+    "slug": "automobiles",
+    "title": "Automobiles",
+    "group": "photo",
+    "description": ""
+  },
+  {
+    "slug": "bw-film",
+    "title": "BW Film",
+    "group": "photo",
+    "description": ""
+  },
+  {
+    "slug": "campaigns",
+    "title": "campaigns",
+    "group": "photo",
+    "description": ""
+  },
+  {
+    "slug": "cityscapes",
+    "title": "Cityscapes",
+    "group": "photo",
+    "description": ""
+  },
+  {
+    "slug": "colour-film",
+    "title": "Colour film",
+    "group": "photo",
+    "description": ""
+  },
+  {
+    "slug": "cover",
+    "title": "Cover",
+    "group": "photo",
+    "description": ""
+  },
+  {
     "slug": "renders",
     "title": "3D Renders",
     "group": "video",
