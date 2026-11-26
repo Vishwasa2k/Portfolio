@@ -138,5 +138,41 @@
     "title": "Placeholder - film frame",
     "format": "35mm",
     "stock": "Agfa 400"
+  },
+  {
+    "id": "render-01",
+    "type": "video",
+    "file": "sample/e.jpg",
+    "video": "sample/clip.mp4",
+    "w": 960,
+    "h": 640,
+    "album": "renders",
+    "tags": [],
+    "title": "Placeholder render - replace me",
+    "camera": "Blender, Cycles"
+  },
+  {
+    "id": "logo-01",
+    "type": "video",
+    "file": "sample/d.jpg",
+    "video": "sample/clip.mp4",
+    "w": 1200,
+    "h": 1200,
+    "album": "logo-animations",
+    "tags": [],
+    "title": "Placeholder logo animation",
+    "camera": "After Effects"
+  },
+  {
+    "id": "reel-01",
+    "type": "video",
+    "file": "sample/b.jpg",
+    "embed": "https://vimeo.com/76979871",
+    "w": 1067,
+    "h": 1600,
+    "album": "reels",
+    "tags": [],
+    "title": "Placeholder reel (Vimeo embed example)",
+    "featured": true
   }
 ]

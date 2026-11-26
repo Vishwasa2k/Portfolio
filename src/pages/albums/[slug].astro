@@ -10,12 +10,7 @@ const { album } = Astro.props;
 const list = photosInAlbum(album.slug);
 ---
 <Base title={album.title} description={album.description}>
-  <div class="wrap">
-    <header class="page-head">
-      <a class="eyebrow" href="/#albums">&larr; Albums</a>
-      <h1>{album.title}</h1>
-      {album.description && <p>{album.description}</p>}
-    </header>
-    <Gallery photos={list} />
-  </div>
+  <h1 class="page-title">{album.title}</h1>
+  {album.description && <p class="page-sub">{album.description}</p>}
+  <Gallery photos={list} />
 </Base>

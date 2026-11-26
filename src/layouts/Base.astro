@@ -1,15 +1,14 @@
 ---
 import '../styles/global.css';
+import Sidebar from '../components/Sidebar.astro';
 import site from '../data/site.json';
 
 interface Props { title?: string; description?: string; }
 const { title, description = site.tagline } = Astro.props;
 const pageTitle = title ? `${title} - ${site.name}` : `${site.name} - Photography`;
-const path = Astro.url.pathname;
-const isActive = (p: string) => (p === '/' ? path === '/' : path.startsWith(p));
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,24 +18,26 @@ const isActive = (p: string) => (p === '/' ? path === '/' : path.startsWith(p));
     <meta property="og:description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <header class="site-header">
+    <div class="mobile-bar">
       <a href="/" class="brand">{site.name}</a>
-      <nav class="nav">
-        <a href="/#albums" aria-current={isActive('/albums') ? 'page' : undefined}>Albums</a>
-        <a href="/film" class="film-link" aria-current={isActive('/film') ? 'page' : undefined}>Film</a>
-        <a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a>
-      </nav>
-    </header>
-    <main><slot /></main>
-    <footer class="site-footer">
-      <span>&copy; {new Date().getFullYear()} {site.name}</span>
-      <span>
-        {site.instagram && <a href={site.instagram}>Instagram</a>}
-        {site.behance && <> &nbsp;/&nbsp; <a href={site.behance}>Behance</a></>}
-      </span>
-    </footer>
+      <button type="button" class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="sidebar">Menu</button>
+    </div>
+    <Sidebar />
+    <div class="scrim" id="scrim"></div>
+    <main class="main"><slot /></main>
+
+    <script>
+      const btn = document.getElementById('menu-btn')!;
+      const setOpen = (open: boolean) => {
+        document.body.classList.toggle('nav-open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      };
+      btn.addEventListener('click', () => setOpen(!document.body.classList.contains('nav-open')));
+      document.getElementById('scrim')!.addEventListener('click', () => setOpen(false));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+    </script>
   </body>
 </html>

@@ -1,0 +1,73 @@
+---
+import { albums } from '../lib/photos';
+import site from '../data/site.json';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const photoAlbums = albums.filter((a) => a.group !== 'video');
+const videoAlbums = albums.filter((a) => a.group === 'video');
+const inGroup = (list: typeof albums) => list.some((a) => path === `/albums/${a.slug}`);
+const sections = [
+  { id: 'sub-photo', label: 'Photography', list: photoAlbums },
+  { id: 'sub-video', label: 'Video', list: videoAlbums },
+].filter((s) => s.list.length > 0);
+const s = site as Record<string, string>;
+---
+<aside class="sidebar" id="sidebar" aria-label="Site menu">
+  <a href="/" class="brand">{site.name}</a>
+
+  <nav>
+    <ul class="menu">
+      <li><a href="/" class:list={{ active: path === '/' }}>Home</a></li>
+
+      {sections.map((sec) => {
+        const open = inGroup(sec.list);
+        return (
+          <li>
+            <button type="button" class="sub-toggle" aria-expanded={open ? 'true' : 'false'} aria-controls={sec.id}>
+              {sec.label}<span class="plus" aria-hidden="true"></span>
+            </button>
+            <div class="sub" id={sec.id} hidden={!open}>
+              {sec.list.map((a) => (
+                <a href={`/albums/${a.slug}`} class:list={{ active: path === `/albums/${a.slug}` }}>{a.title}</a>
+              ))}
+            </div>
+          </li>
+        );
+      })}
+
+      <li><a href="/about" class:list={{ active: path === '/about' }}>About / Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="side-foot">
+    <div class="icons">
+      {s.instagram && (
+        <a href={s.instagram} aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r=".6" /></svg>
+        </a>
+      )}
+      {s.email && (
+        <a href={`mailto:${s.email}`} aria-label="Email">
+          <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 7 8.5 6.5L20.5 7" /></svg>
+        </a>
+      )}
+      {s.behance && (
+        <a href={s.behance} aria-label="Behance" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3 6h6a3 3 0 0 1 0 6H3zM3 12h7a3 3 0 0 1 0 6H3zM14 9h6M14.5 15a3 3 0 1 0 5.5-1.5" /></svg>
+        </a>
+      )}
+    </div>
+    <span>&copy; {new Date().getFullYear()} {site.name}</span>
+  </div>
+</aside>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.sub-toggle').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const panel = document.getElementById(btn.getAttribute('aria-controls') ?? '');
+      const open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      if (panel) panel.hidden = open;
+    });
+  });
+</script>

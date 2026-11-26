@@ -1,6 +1,6 @@
 # Photography portfolio (Astro)
 
-Dark gallery site with albums (themes + places), a Film page that collects every film frame, and a film/digital filter inside each album. Photos are served from Cloudflare R2; the site itself is code only and deploys from GitHub.
+Minimal gallery site with a side panel (Photography and Video albums, About / Contact), a home page of featured work, film badges and an All / Film / Digital filter inside photo albums, and video albums that play your own clips or YouTube/Vimeo links. Photos and videos are served from Cloudflare R2; the site itself is code only and deploys from GitHub.
 
 ## Run locally
 
@@ -14,10 +14,29 @@ With `PUBLIC_IMAGE_BASE` empty it shows the placeholder images in `public/sample
 | File | What it controls |
 |---|---|
 | `src/data/site.json` | Name, tagline, email, Instagram/Behance links, About text |
-| `src/data/albums.json` | Albums. `group` is `themes` or `places`; `cover` is a photo id |
-| `src/data/photos.json` | Every photo: album, medium, film stock, camera |
+| `src/data/albums.json` | Albums. `group` is `photo` or `video` (decides which menu it sits under); order in the file = order in the menu |
+| `src/data/photos.json` | Every photo and video: album, medium, film stock, camera |
 
-A photo has one primary `album` and an optional `tags` list of other album slugs. It appears in all of them, with no duplicate files. `medium` is `film` or `digital`. Film photos get the amber format badge (35MM / 120), a stock and camera line, and appear on the Film page. Mark up to a few with `"featured": true`; the first featured photo is the home page hero.
+A photo has one primary `album` and an optional `tags` list of other album slugs. It appears in all of them, with no duplicate files. `medium` is `film` or `digital`. Film photos get the amber format badge (35MM / 120) and their stock and camera in the enlarged view. Items with `"featured": true` make up the home page, in the order they appear in the file.
+
+## Adding videos
+
+A video entry is like a photo entry, with `"type": "video"`. `file` is the thumbnail image shown in the grid, and `w`/`h` are the video's dimensions. Then either:
+
+- `"video": "renders/porsche.mp4"` - an MP4 you uploaded to R2 (H.264, ideally under ~50 MB), or
+- `"embed": "https://youtu.be/XXXXXXXXXXX"` - a YouTube or Vimeo link (best for long or large videos).
+
+    {
+      "id": "renders-porsche",
+      "type": "video",
+      "file": "renders/porsche-thumb.jpg",
+      "video": "renders/porsche.mp4",
+      "w": 1920, "h": 1080,
+      "album": "renders",
+      "tags": [],
+      "title": "Porsche 911 - Blender",
+      "camera": "Blender, Cycles"
+    }
 
 ## Adding photos
 
@@ -45,10 +64,10 @@ Only the manifest and code go to GitHub. `incoming/` and `out/` are git-ignored.
 
 ## Structure
 
-    src/layouts/Base.astro        header, footer, fonts
-    src/components/Gallery.astro  masonry grid, film badge, filter, lightbox
-    src/pages/index.astro         hero, album cards, film strip
+    src/layouts/Base.astro        page shell, mobile menu, fonts
+    src/components/Sidebar.astro  side panel with album lists
+    src/components/Gallery.astro  photo/video grid, film badge, filter, viewer
+    src/pages/index.astro         home page (featured items)
     src/pages/albums/[slug].astro one page per album
-    src/pages/film.astro          all film photos
     src/pages/about.astro
     scripts/prepare-photos.mjs    resize + manifest generator

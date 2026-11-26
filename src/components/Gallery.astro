@@ -1,11 +1,12 @@
 ---
-import { imageUrl, mediumLabel, captionFor, type Photo } from '../lib/photos';
+import { imageUrl, mediumLabel, captionFor, isVideo, isFilm, embedUrl, type Photo } from '../lib/photos';
 
 interface Props { photos: Photo[]; showFilter?: boolean; }
 const { photos, showFilter = true } = Astro.props;
 
-const filmCount = photos.filter((p) => p.medium === 'film').length;
-const digitalCount = photos.length - filmCount;
+const stills = photos.filter((p) => !isVideo(p));
+const filmCount = stills.filter(isFilm).length;
+const digitalCount = stills.length - filmCount;
 const hasBoth = filmCount > 0 && digitalCount > 0;
 ---
 {showFilter && hasBoth && (
@@ -17,77 +18,143 @@ const hasBoth = filmCount > 0 && digitalCount > 0;
 )}
 
 <div class="gallery" id="gallery">
-  {photos.map((p) => (
-    <figure
-      class:list={['item', { 'is-film': p.medium === 'film' }]}
-      data-medium={p.medium}
-      data-src={imageUrl(p.file)}
-      data-title={p.title ?? ''}
-      data-cap={captionFor(p)}
-      data-label={mediumLabel(p)}
-    >
-      <button type="button" aria-label={`Open ${p.title ?? 'photo'}`}>
-        <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" decoding="async" />
-        {p.medium === 'film' && <span class="badge">{mediumLabel(p)}</span>}
-      </button>
-      {p.medium === 'film' && captionFor(p) && <figcaption class="film-cap">{captionFor(p)}</figcaption>}
-    </figure>
-  ))}
+  {photos.map((p) => {
+    const ar = p.w / p.h;
+    const video = isVideo(p);
+    const kind = video ? 'video' : isFilm(p) ? 'film' : 'digital';
+    return (
+      <figure
+        class:list={['item', `is-${kind}`]}
+        style={`--ar:${ar.toFixed(4)};flex-grow:${Math.round(ar * 100)}`}
+        data-medium={kind}
+        data-src={imageUrl(p.file)}
+        data-video={p.video ? imageUrl(p.video) : undefined}
+        data-embed={p.embed ? embedUrl(p.embed) : undefined}
+        data-title={p.title ?? ''}
+        data-cap={captionFor(p)}
+        data-label={mediumLabel(p)}
+      >
+        <button type="button" aria-label={`${video ? 'Play' : 'Enlarge'} ${p.title || (video ? 'video' : 'photo')}`}>
+          <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" decoding="async" />
+          {isFilm(p) && <span class="badge">{mediumLabel(p)}</span>}
+          {video && (
+            <span class="play" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" /></svg>
+            </span>
+          )}
+        </button>
+      </figure>
+    );
+  })}
 </div>
 
-<dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
-  <button class="lb-btn lb-close" type="button" aria-label="Close">&times;</button>
-  <button class="lb-btn lb-prev" type="button" aria-label="Previous">&#8249;</button>
-  <button class="lb-btn lb-next" type="button" aria-label="Next">&#8250;</button>
-  <div class="lb-inner">
-    <div class="lb-img"><img id="lb-img" alt="" /></div>
-    <div class="lb-cap" id="lb-cap"></div>
+<dialog class="lightbox" id="lightbox" aria-label="Viewer">
+  <div class="lb-top">
+    <span id="lb-count"></span>
+    <button class="lb-btn lb-close" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5 5 19" /></svg>
+    </button>
   </div>
+  <button class="lb-btn lb-nav lb-prev" type="button" aria-label="Previous">
+    <svg viewBox="0 0 24 24"><path d="m15 4-8 8 8 8" /></svg>
+  </button>
+  <button class="lb-btn lb-nav lb-next" type="button" aria-label="Next">
+    <svg viewBox="0 0 24 24"><path d="m9 4 8 8-8 8" /></svg>
+  </button>
+  <div class="lb-stage" id="lb-stage"></div>
+  <div class="lb-cap" id="lb-cap"></div>
 </dialog>
 
 <script>
   const items = Array.from(document.querySelectorAll<HTMLElement>('#gallery .item'));
   const dlg = document.getElementById('lightbox') as HTMLDialogElement;
-  const lbImg = document.getElementById('lb-img') as HTMLImageElement;
+  const stage = document.getElementById('lb-stage') as HTMLElement;
   const lbCap = document.getElementById('lb-cap') as HTMLElement;
+  const lbCount = document.getElementById('lb-count') as HTMLElement;
   let current = 0;
 
   const visible = () => items.filter((el) => !el.hidden);
 
+  function media(el: HTMLElement): HTMLElement {
+    const d = el.dataset;
+    if (d.embed) {
+      const f = document.createElement('iframe');
+      f.src = d.embed;
+      f.allow = 'autoplay; fullscreen; picture-in-picture';
+      f.allowFullscreen = true;
+      f.className = 'lb-embed';
+      const ar = el.style.getPropertyValue('--ar');
+      f.style.aspectRatio = ar || '16 / 9';
+      return f;
+    }
+    if (d.video) {
+      const v = document.createElement('video');
+      v.src = d.video;
+      v.poster = d.src ?? '';
+      v.controls = true;
+      v.autoplay = true;
+      v.playsInline = true;
+      return v;
+    }
+    const img = document.createElement('img');
+    img.src = d.src ?? '';
+    img.alt = d.title ?? '';
+    return img;
+  }
+
   function show(el: HTMLElement) {
-    current = visible().indexOf(el);
-    lbImg.src = el.dataset.src ?? '';
-    lbImg.alt = el.dataset.title ?? '';
-    const isFilm = el.dataset.medium === 'film';
-    const parts = [el.dataset.title, isFilm ? `${el.dataset.label ?? ''} ${el.dataset.cap ? '- ' + el.dataset.cap : ''}` : el.dataset.cap].filter((s) => s && s.trim());
-    lbCap.innerHTML = '';
-    parts.forEach((txt, i) => {
-      const span = document.createElement('span');
-      if (isFilm && i === parts.length - 1) span.className = 'film';
-      span.textContent = (i ? '   ' : '') + txt!.trim();
-      lbCap.appendChild(span);
+    const v = visible();
+    current = v.indexOf(el);
+    stage.replaceChildren(media(el));
+    lbCount.textContent = `${current + 1} / ${v.length}`;
+    dlg.querySelectorAll<HTMLElement>('.lb-nav').forEach((b) => { b.hidden = v.length < 2; });
+
+    const film = el.dataset.medium === 'film';
+    const parts: { text: string; film: boolean }[] = [];
+    if (el.dataset.title) parts.push({ text: el.dataset.title, film: false });
+    if (film) {
+      const detail = [el.dataset.label, el.dataset.cap].filter(Boolean).join(' - ');
+      if (detail) parts.push({ text: detail, film: true });
+    } else if (el.dataset.cap) {
+      parts.push({ text: el.dataset.cap, film: false });
+    }
+    lbCap.replaceChildren(...parts.map((p, i) => {
+      const s = document.createElement('span');
+      if (p.film) s.className = 'film';
+      s.textContent = (i ? '  |  ' : '') + p.text;
+      return s;
+    }));
+
+    [v[(current + 1) % v.length], v[(current - 1 + v.length) % v.length]].forEach((n) => {
+      if (n?.dataset.src && n.dataset.medium !== 'video') new Image().src = n.dataset.src;
     });
   }
 
   function step(dir: number) {
     const v = visible();
     if (!v.length) return;
-    current = (current + dir + v.length) % v.length;
-    show(v[current]);
+    show(v[(current + dir + v.length) % v.length]);
   }
 
   items.forEach((el) => el.querySelector('button')?.addEventListener('click', () => { show(el); dlg.showModal(); }));
+  dlg.addEventListener('close', () => stage.replaceChildren());
   dlg.querySelector('.lb-close')?.addEventListener('click', () => dlg.close());
   dlg.querySelector('.lb-prev')?.addEventListener('click', () => step(-1));
   dlg.querySelector('.lb-next')?.addEventListener('click', () => step(1));
-  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target === stage) dlg.close(); });
   document.addEventListener('keydown', (e) => {
     if (!dlg.open) return;
     if (e.key === 'ArrowLeft') step(-1);
     if (e.key === 'ArrowRight') step(1);
   });
 
-  // Film / digital filter
+  let x0 = 0;
+  stage.addEventListener('touchstart', (e) => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+  stage.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+  }, { passive: true });
+
   const buttons = document.querySelectorAll<HTMLButtonElement>('.filter button');
   function applyFilter(kind: string) {
     items.forEach((el) => { el.hidden = kind !== 'all' && el.dataset.medium !== kind; });
