@@ -22,7 +22,8 @@
     "title": "Placeholder - film frame",
     "format": "35mm",
     "stock": "Kodacolor 100",
-    "camera": "Nikon F3 + 50mm f/1.8"
+    "camera": "Nikon F3 + 50mm f/1.8",
+    "featured": true
   },
   {
     "id": "fs-01",
@@ -45,7 +46,8 @@
     "medium": "film",
     "title": "Placeholder - film frame",
     "format": "120",
-    "stock": "Velvia 50"
+    "stock": "Velvia 50",
+    "featured": true
   },
   {
     "id": "cel-01",
@@ -66,7 +68,8 @@
     "album": "celebrations",
     "tags": [],
     "medium": "digital",
-    "title": "Placeholder"
+    "title": "Placeholder",
+    "featured": true
   },
   {
     "id": "got-01",
@@ -92,7 +95,8 @@
       "automotive"
     ],
     "medium": "digital",
-    "title": "Placeholder"
+    "title": "Placeholder",
+    "featured": true
   },
   {
     "id": "ber-01",
@@ -105,7 +109,8 @@
     "title": "Placeholder - film frame",
     "format": "35mm",
     "stock": "Cinestill 800T",
-    "camera": "Nikon F3 + 50mm f/1.8"
+    "camera": "Nikon F3 + 50mm f/1.8",
+    "featured": true
   },
   {
     "id": "ber-02",
@@ -115,7 +120,8 @@
     "album": "berlin",
     "tags": [],
     "medium": "digital",
-    "title": "Placeholder"
+    "title": "Placeholder",
+    "featured": true
   },
   {
     "id": "blr-01",
@@ -125,7 +131,8 @@
     "album": "bangalore",
     "tags": [],
     "medium": "digital",
-    "title": "Placeholder"
+    "title": "Placeholder",
+    "featured": true
   },
   {
     "id": "blr-02",
@@ -137,7 +144,8 @@
     "medium": "film",
     "title": "Placeholder - film frame",
     "format": "35mm",
-    "stock": "Agfa 400"
+    "stock": "Agfa 400",
+    "featured": true
   },
   {
     "id": "render-01",
@@ -172,7 +180,42 @@
     "h": 1600,
     "album": "reels",
     "tags": [],
-    "title": "Placeholder reel (Vimeo embed example)",
+    "title": "Placeholder reel (Vimeo embed example)"
+  },
+  {
+    "id": "por-01",
+    "file": "sample/f.jpg",
+    "w": 1067,
+    "h": 1600,
+    "album": "portraits",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder",
+    "featured": true
+  },
+  {
+    "id": "por-02",
+    "file": "sample/b.jpg",
+    "w": 1067,
+    "h": 1600,
+    "album": "portraits",
+    "tags": [],
+    "medium": "film",
+    "title": "Placeholder",
+    "format": "35mm",
+    "stock": "Kodacolor 100",
+    "camera": "Nikon F3 + 50mm f/1.8",
+    "featured": true
+  },
+  {
+    "id": "por-03",
+    "file": "sample/d.jpg",
+    "w": 1200,
+    "h": 1200,
+    "album": "portraits",
+    "tags": [],
+    "medium": "digital",
+    "title": "Placeholder",
     "featured": true
   }
 ]

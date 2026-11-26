@@ -21,6 +21,13 @@
     "cover": "cel-01"
   },
   {
+    "slug": "portraits",
+    "title": "Portraits",
+    "group": "photo",
+    "description": "",
+    "cover": "por-01"
+  },
+  {
     "slug": "gothenburg",
     "title": "Gothenburg",
     "group": "photo",

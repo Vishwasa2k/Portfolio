@@ -17,7 +17,40 @@ With `PUBLIC_IMAGE_BASE` empty it shows the placeholder images in `public/sample
 | `src/data/albums.json` | Albums. `group` is `photo` or `video` (decides which menu it sits under); order in the file = order in the menu |
 | `src/data/photos.json` | Every photo and video: album, medium, film stock, camera |
 
-A photo has one primary `album` and an optional `tags` list of other album slugs. It appears in all of them, with no duplicate files. `medium` is `film` or `digital`. Film photos get the amber format badge (35MM / 120) and their stock and camera in the enlarged view. Items with `"featured": true` make up the home page, in the order they appear in the file.
+A photo has one primary `album` and an optional `tags` list of other album slugs. It appears in all of them, with no duplicate files. `medium` is `film` or `digital`. Film photos get the amber format badge (35MM / 120) and their stock and camera in the enlarged view. Photos with `"featured": true` make up the home page, in the order they appear in the file. Videos never appear on the home page.
+
+## Adding videos
+
+A video entry is like a photo entry, with `"type": "video"`. `file` is the thumbnail image shown in the grid, and `w`/`h` are the video's dimensions. Then either:
+
+- `"video": "renders/porsche.mp4"` - an MP4 you uploaded to R2 (H.264, ideally under ~50 MB), or
+- `"embed": "https://youtu.be/XXXXXXXXXXX"` - a YouTube or Vimeo link (best for long or large videos).
+
+    {
+      "id": "renders-porsche",
+      "type": "video",
+      "file": "renders/porsche-thumb.jpg",
+      "video": "renders/porsche.mp4",
+      "w": 1920, "h": 1080,
+      "album": "renders",
+      "tags": [],
+      "title": "Porsche 911 - Blender",
+      "camera": "Blender, Cycles"
+    }
+
+## Adding photos
+
+One-time setup:
+1. Cloudflare > R2 > create a bucket (e.g. `portfolio-photos`). In its Settings, enable the Public Development URL (r2.dev) and copy it.
+2. Put that URL in `src/data/site.json` as `"imageBase"` (no trailing slash).
+3. R2 > Manage API tokens > Create API token with Object Read & Write on that bucket. Copy `.env.example` to `.env` and fill in the account ID, access key ID, secret and bucket name. `.env` never goes to GitHub.
+
+Each batch:
+1. Export from Lightroom into `incoming/<album>/digital/` or `incoming/<album>/film/`. For film, a subfolder named after the stock fills it in for you: `incoming/berlin/film/cinestill-800t/`. Folder names must match album slugs in `albums.json`.
+2. `npm run photos` - resizes into `out/` and adds the entries to `src/data/photos.json` (35mm vs 120 is guessed from the frame shape; check it).
+3. `npm run upload` - sends `out/` to R2. Already-uploaded files are skipped.
+4. In `photos.json`: set `"featured": true` on the photos for the home page, add titles if you like, and reorder entries to change the order on the site.
+5. Empty `incoming/` and `out/`, then `git add .`, `git commit`, `git push`.
 
 ## Adding videos
 
@@ -50,17 +83,13 @@ Only the manifest and code go to GitHub. `incoming/` and `out/` are git-ignored.
 
 ## Cloudflare setup
 
-**R2 (photos)**
-1. Cloudflare dashboard > R2 > create bucket (e.g. `portfolio-photos`).
-2. Upload your `out/` folders.
-3. Bucket > Settings > enable the public `r2.dev` URL for testing, or connect a custom domain (e.g. `img.yourdomain.com`) for the real site.
+**R2 (photos)** - see "Adding photos" above. When you buy a domain, connect it to the bucket as a custom domain (e.g. `img.yourdomain.com`) and update `imageBase`; the r2.dev URL is rate-limited and meant for testing.
 
 **Deploy (site)**
 1. Workers & Pages > Create > connect your GitHub repo.
 2. Build command: `npm run build`
 3. Output / build directory: `dist`
-4. Environment variable: `PUBLIC_IMAGE_BASE` = your R2 public URL, no trailing slash.
-5. Set `site` in `astro.config.mjs` to your real domain once you have one.
+4. Set `site` in `astro.config.mjs` to your real domain once you have one.
 
 ## Structure
 
