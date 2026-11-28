@@ -8,7 +8,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "photos": "node scripts/prepare-photos.mjs",
-    "upload": "node scripts/upload.mjs"
+    "upload": "node scripts/upload.mjs",
+    "sync": "node scripts/sync.mjs"
   },
   "dependencies": {
     "astro": "^7.4.13"

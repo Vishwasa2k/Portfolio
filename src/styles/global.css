@@ -119,8 +119,8 @@ dialog.lightbox::backdrop { background: var(--bg); }
 .lb-btn { padding: .6rem; color: var(--muted); transition: color .2s; line-height: 1; }
 .lb-btn:hover { color: var(--text); }
 .lb-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; display: block; }
-.lb-stage { position: absolute; inset: 3.4rem 4.5rem 4rem; display: grid; place-items: center; }
-.lb-stage img, .lb-stage video { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; background: #000; }
+.lb-stage { position: absolute; inset: 3.4rem 4.5rem 4rem; display: flex; align-items: center; justify-content: center; }
+.lb-stage img, .lb-stage video { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; background: #000; }
 .lb-stage img { background: none; }
 .lb-embed { border: 0; height: 100%; width: auto; max-width: 100%; background: #000; }
 .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 3; }
@@ -139,3 +139,9 @@ dialog.lightbox::backdrop { background: var(--bg); }
 .about p { max-width: 58ch; margin-bottom: 1rem; }
 .about a { border-bottom: 1px solid var(--muted); }
 .contact-line { margin-top: 1.4rem; }
+
+/* ---------- Discourage saving images ---------- */
+.gallery img, .lb-stage img, .about img {
+  -webkit-user-select: none; user-select: none;
+  -webkit-user-drag: none; -webkit-touch-callout: none;
+}

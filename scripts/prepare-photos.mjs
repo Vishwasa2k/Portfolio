@@ -3,8 +3,11 @@
 //
 //   npm run photos                      reads from the incoming/ folder in this project
 //   npm run photos -- "D:\Exports"      or reads straight from any folder on your PC
+//   npm run sync -- "D:\Exports"        adds new photos, removes ones you deleted or moved, uploads - all in one
 //
-// Every top-level folder becomes an album, named after the folder:
+// Every folder inside it becomes an album, named after the folder. A folder called "Home"
+// is special: its photos make up the home page and it doesn't appear as an album. You can also point at a
+// single album folder (npm run photos -- "D:\Exports\Portraits").
 //   Exports\Formula Student\DSC_0412.jpg            -> album "Formula Student", digital
 //   Exports\Berlin\Film\Cinestill 800T\0001.jpg     -> album "Berlin", film, stock "Cinestill 800T"
 //   Exports\Berlin\Portra 400\scan12.jpg             -> film too (a film stock name in the path counts)
@@ -14,8 +17,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import readline from 'node:readline/promises';
 
-const IN = process.argv[2] ?? 'incoming';
+const args = process.argv.slice(2);
+const IN = args.find((a) => !a.startsWith('--')) ?? 'incoming';
+const SYNC = args.includes('--sync'); // also remove photos whose source file is gone
+const YES = args.includes('--yes');   // skip the confirmation for large removals
+const PENDING = path.join('out', 'pending-deletes.json');
 const OUT = 'out';
 const MANIFEST = 'src/data/photos.json';
 const ALBUMS = 'src/data/albums.json';
@@ -42,11 +50,22 @@ const albums = JSON.parse(fs.readFileSync(ALBUMS, 'utf8'));
 const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((d) =>
   d.isDirectory() ? walk(path.join(dir, d.name)) : [path.join(dir, d.name)]);
 
+// Which folders are albums? Normally every folder inside IN. But if IN itself holds photos,
+// or is named like an existing album (e.g. you pointed at "...\Portraits"), IN is the album.
+const knownSlugs = new Set(albums.map((a) => a.slug));
+const isImage = (f) => EXT.has(path.extname(f).toLowerCase());
+const inName = path.basename(path.resolve(IN));
+const topEntries = fs.readdirSync(IN, { withFileTypes: true });
+const singleAlbum = topEntries.some((d) => d.isFile() && isImage(d.name)) || knownSlugs.has(slugify(inName));
+const albumRoots = singleAlbum
+  ? [[inName, IN]]
+  : topEntries.filter((d) => d.isDirectory()).map((d) => [d.name, path.join(IN, d.name)]);
+if (singleAlbum) console.log(`Importing "${inName}" as one album.\n`);
+
 // Gather jobs
 const jobs = [];
 let rawSkipped = 0;
-for (const folder of fs.readdirSync(IN, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name)) {
-  const albumDir = path.join(IN, folder);
+for (const [folder, albumDir] of albumRoots) {
   for (const file of walk(albumDir).sort()) {
     const ext = path.extname(file).toLowerCase();
     if (!EXT.has(ext)) { if (/\.(nef|cr2|cr3|arw|raf|dng|orf|rw2)$/i.test(file)) rawSkipped++; continue; }
@@ -62,8 +81,12 @@ for (const folder of fs.readdirSync(IN, { withFileTypes: true }).filter((d) => d
   }
 }
 if (!jobs.length) {
-  console.log(`No photos found in ${IN}.${rawSkipped ? ` (${rawSkipped} RAW files skipped - export JPEGs from Lightroom first.)` : ''}`);
-  process.exit(0);
+  console.log(`No photos found in ${IN}.`);
+  if (rawSkipped) console.log(`${rawSkipped} RAW files were skipped - export JPEGs from Lightroom first.`);
+  const exts = {};
+  for (const f of walk(IN)) { const e = path.extname(f).toLowerCase() || '(none)'; exts[e] = (exts[e] ?? 0) + 1; }
+  console.log('File types found:', Object.keys(exts).length ? exts : 'none');
+  process.exit(SYNC ? 1 : 0);
 }
 
 // First real batch: drop the placeholder sample entries
@@ -75,11 +98,13 @@ const existing = new Set(manifest.map((p) => p.id));
 const albumBySlug = new Map(albums.map((a) => [a.slug, a]));
 let added = 0, skipped = 0;
 const newAlbums = [];
+const scanned = new Set();
 
 for (const { folder, file, segs, medium, stock } of jobs) {
-  const slug = slugify(folder);
+  const slug = /^home[\s_-]*(page)?$/i.test(folder.trim()) ? 'home' : slugify(folder);
   if (!albumBySlug.has(slug)) {
-    const album = { slug, title: folder, group: 'photo', description: '' };
+    const isHome = slug === 'home';
+    const album = { slug, title: folder, group: isHome ? 'home' : 'photo', description: '' };
     const firstVideo = albums.findIndex((a) => a.group === 'video');
     albums.splice(firstVideo < 0 ? albums.length : firstVideo, 0, album);
     albumBySlug.set(slug, album);
@@ -89,6 +114,7 @@ for (const { folder, file, segs, medium, stock } of jobs) {
   // Unique name built from sub-folders + original filename, so DSC_0001 in two folders can't clash
   const name = slugify([...segs, path.parse(file).name].join('-'));
   const id = `${slug}--${name}`;
+  scanned.add(id);
   if (existing.has(id)) { skipped++; continue; }
 
   const rel = `${slug}/${name}.jpg`;
@@ -119,10 +145,48 @@ for (const { folder, file, segs, medium, stock } of jobs) {
   console.log(`ok  ${rel}${medium === 'film' ? `  [film ${entry.format}${stock ? ', ' + stock : ''}]` : ''}`);
 }
 
+// --sync: anything on the site that is no longer in the folders gets removed
+let removed = [];
+if (SYNC) {
+  const inSlug = /^home[\s_-]*(page)?$/i.test(inName.trim()) ? 'home' : slugify(inName);
+  const scopeAlbums = singleAlbum ? new Set([inSlug]) : null; // null = every photo album
+  const inScope = (p) =>
+    p.type !== 'video' && !p.video && !p.embed && !p.file.startsWith('sample/') &&
+    (scopeAlbums ? scopeAlbums.has(p.album) : true);
+  const scope = manifest.filter(inScope);
+  removed = scope.filter((p) => !scanned.has(p.id));
+
+  if (removed.length) {
+    console.log(`\n${removed.length} photo(s) are on the site but no longer in ${IN}:`);
+    removed.slice(0, 15).forEach((p) => console.log(`  -  ${p.file}`));
+    if (removed.length > 15) console.log(`  ... and ${removed.length - 15} more`);
+
+    const big = removed.length > 20 || removed.length > scope.length * 0.3;
+    if (big && !YES) {
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await rl.question(`\nRemove these ${removed.length} from the site AND delete them from R2? Type yes to continue: `);
+      rl.close();
+      if (answer.trim().toLowerCase() !== 'yes') {
+        console.log('Nothing removed. (New photos were still added.)');
+        removed = [];
+      }
+    }
+  }
+
+  if (removed.length) {
+    const gone = new Set(removed.map((p) => p.id));
+    for (let i = manifest.length - 1; i >= 0; i--) if (gone.has(manifest[i].id)) manifest.splice(i, 1);
+    for (const p of removed) fs.rmSync(path.join(OUT, p.file), { force: true });
+    const pending = fs.existsSync(PENDING) ? JSON.parse(fs.readFileSync(PENDING, 'utf8')) : [];
+    fs.mkdirSync(OUT, { recursive: true });
+    fs.writeFileSync(PENDING, JSON.stringify([...new Set([...pending, ...removed.map((p) => p.file)])], null, 2));
+  }
+}
+
 fs.writeFileSync(MANIFEST, JSON.stringify(manifest, null, 2) + '\n');
 fs.writeFileSync(ALBUMS, JSON.stringify(albums, null, 2) + '\n');
 
-console.log(`\n${added} photos added, ${skipped} already on the site.`);
+console.log(`\n${added} photos added, ${skipped} already on the site${SYNC ? `, ${removed.length} removed` : ''}.`);
 if (newAlbums.length) console.log(`New albums: ${newAlbums.join(', ')}`);
 if (rawSkipped) console.log(`${rawSkipped} RAW files skipped - export JPEGs from Lightroom for those.`);
-console.log('Next: npm run upload');
+if (!SYNC) console.log('Next: npm run upload');
