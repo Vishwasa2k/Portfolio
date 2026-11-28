@@ -35,7 +35,7 @@ const hasBoth = filmCount > 0 && digitalCount > 0;
         data-label={mediumLabel(p)}
       >
         <button type="button" aria-label={`${video ? 'Play' : 'Enlarge'} ${p.title || (video ? 'video' : 'photo')}`}>
-          <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" decoding="async" />
+          <img src={imageUrl(p.file)} width={p.w} height={p.h} alt={p.title ?? ''} loading="lazy" decoding="async" draggable="false" />
           {isFilm(p) && <span class="badge">{mediumLabel(p)}</span>}
           {video && (
             <span class="play" aria-hidden="true">
@@ -94,11 +94,14 @@ const hasBoth = filmCount > 0 && digitalCount > 0;
       v.controls = true;
       v.autoplay = true;
       v.playsInline = true;
+      v.setAttribute('controlsList', 'nodownload');
+      v.disablePictureInPicture = true;
       return v;
     }
     const img = document.createElement('img');
     img.src = d.src ?? '';
     img.alt = d.title ?? '';
+    img.draggable = false;
     return img;
   }
 

@@ -28,7 +28,7 @@ export interface Photo {
 export interface Album {
   slug: string;
   title: string;
-  group: 'photo' | 'video';
+  group: 'photo' | 'video' | 'home';
   description?: string;
   cover?: string;
 }
@@ -49,7 +49,8 @@ export const photosInAlbum = (slug: string) =>
   photos.filter((p) => p.album === slug || p.tags.includes(slug));
 
 /** Albums that have at least one photo or video (empty ones stay out of the menu). */
-export const visibleAlbums = () => albums.filter((a) => photosInAlbum(a.slug).length > 0);
+export const visibleAlbums = () =>
+  albums.filter((a) => a.group !== 'home' && photosInAlbum(a.slug).length > 0);
 
 export const coverFor = (album: Album) =>
   photos.find((p) => p.id === album.cover) ?? photosInAlbum(album.slug)[0];
@@ -69,9 +70,16 @@ export const embedUrl = (url: string) => {
   return url;
 };
 
-/** Home page: photos marked featured, in manifest order (falls back to all photos). Videos never show here. */
+/**
+ * Home page, in order of preference:
+ * 1. photos from the "Home" folder (album slug "home"),
+ * 2. otherwise photos marked "featured": true,
+ * 3. otherwise every photo. Videos never show here.
+ */
 export const homePhotos = () => {
   const stills = photos.filter((p) => !isVideo(p));
+  const home = stills.filter((p) => p.album === 'home');
+  if (home.length) return home;
   const f = stills.filter((p) => p.featured);
   return f.length ? f : stills;
 };

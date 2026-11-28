@@ -5,7 +5,8 @@
 //   npm run photos -- "D:\Exports"      or reads straight from any folder on your PC
 //   npm run sync -- "D:\Exports"        adds new photos, removes ones you deleted or moved, uploads - all in one
 //
-// Every folder inside it becomes an album, named after the folder. You can also point at a
+// Every folder inside it becomes an album, named after the folder. A folder called "Home"
+// is special: its photos make up the home page and it doesn't appear as an album. You can also point at a
 // single album folder (npm run photos -- "D:\Exports\Portraits").
 //   Exports\Formula Student\DSC_0412.jpg            -> album "Formula Student", digital
 //   Exports\Berlin\Film\Cinestill 800T\0001.jpg     -> album "Berlin", film, stock "Cinestill 800T"
@@ -100,9 +101,10 @@ const newAlbums = [];
 const scanned = new Set();
 
 for (const { folder, file, segs, medium, stock } of jobs) {
-  const slug = slugify(folder);
+  const slug = /^home[\s_-]*(page)?$/i.test(folder.trim()) ? 'home' : slugify(folder);
   if (!albumBySlug.has(slug)) {
-    const album = { slug, title: folder, group: 'photo', description: '' };
+    const isHome = slug === 'home';
+    const album = { slug, title: folder, group: isHome ? 'home' : 'photo', description: '' };
     const firstVideo = albums.findIndex((a) => a.group === 'video');
     albums.splice(firstVideo < 0 ? albums.length : firstVideo, 0, album);
     albumBySlug.set(slug, album);
@@ -146,7 +148,8 @@ for (const { folder, file, segs, medium, stock } of jobs) {
 // --sync: anything on the site that is no longer in the folders gets removed
 let removed = [];
 if (SYNC) {
-  const scopeAlbums = singleAlbum ? new Set([slugify(inName)]) : null; // null = every photo album
+  const inSlug = /^home[\s_-]*(page)?$/i.test(inName.trim()) ? 'home' : slugify(inName);
+  const scopeAlbums = singleAlbum ? new Set([inSlug]) : null; // null = every photo album
   const inScope = (p) =>
     p.type !== 'video' && !p.video && !p.embed && !p.file.startsWith('sample/') &&
     (scopeAlbums ? scopeAlbums.has(p.album) : true);

@@ -38,6 +38,12 @@ const pageTitle = title ? `${title} - ${site.name}` : `${site.name} - Photograph
       btn.addEventListener('click', () => setOpen(!document.body.classList.contains('nav-open')));
       document.getElementById('scrim')!.addEventListener('click', () => setOpen(false));
       document.addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+
+      // Discourage saving photos: no right-click menu or dragging on images and videos
+      const isMedia = (t: EventTarget | null) =>
+        t instanceof Element && !!t.closest('img, video, .item, .lb-stage');
+      document.addEventListener('contextmenu', (e) => { if (isMedia(e.target)) e.preventDefault(); });
+      document.addEventListener('dragstart', (e) => { if (isMedia(e.target)) e.preventDefault(); });
     </script>
   </body>
 </html>

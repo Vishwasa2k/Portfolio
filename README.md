@@ -59,6 +59,8 @@ That one command:
 
 Then publish: `git add .`, `git commit -m "Update photos"`, `git push`.
 
+Home page: make a folder called `Home` inside your top folder and put copies of the photos you want on the home page in it. Sync adds them; delete a copy to take it off. The Home folder never shows as an album. (Without a Home folder, the home page falls back to photos marked `"featured": true`, then to everything.)
+
 Rules:
 - Always sync the same top folder you imported from. Pointing at one album folder (`...\Portraits`) only syncs that album.
 - Film: anything inside a `Film` / `35mm` / `120` folder, or a folder named after a stock (`Portra 400`, `Cinestill 800T`), is marked film, with the stock taken from the folder name.
@@ -67,7 +69,7 @@ Rules:
 
 ### Manual steps (if you prefer)
 - `npm run photos -- "F:\Website\Portfolio"` only adds new photos; `npm run upload` uploads them.
-- Home page: set `"featured": true` in `photos.json` (until any are set, the home page shows everything).
+- Home page: use a `Home` folder (above), or set `"featured": true` in `photos.json`.
 - Album names and menu order: `albums.json`. Albums with no photos are hidden automatically.
 
 ## Adding videos
