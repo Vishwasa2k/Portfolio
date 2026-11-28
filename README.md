@@ -45,6 +45,57 @@ One-time setup:
 2. Put that URL in `src/data/site.json` as `"imageBase"` (no trailing slash).
 3. R2 > Manage API tokens > Create API token with Object Read & Write on that bucket. Copy `.env.example` to `.env` and fill in the account ID, access key ID, secret and bucket name. `.env` never goes to GitHub.
 
+### Keeping the site in sync with your folders (recommended)
+
+Your export folder is the master copy. Organise it in File Explorer, one folder per album, then run:
+
+    npm run sync -- "F:\Website\Portfolio"
+
+That one command:
+- adds new photos (resized, listed in `photos.json`, uploaded to R2),
+- removes photos you deleted from the folders, from both the site and R2,
+- moves photos you moved to another album folder,
+- leaves videos and everything else you set by hand (featured, titles, stocks) alone.
+
+Then publish: `git add .`, `git commit -m "Update photos"`, `git push`.
+
+Rules:
+- Always sync the same top folder you imported from. Pointing at one album folder (`...\Portraits`) only syncs that album.
+- Film: anything inside a `Film` / `35mm` / `120` folder, or a folder named after a stock (`Portra 400`, `Cinestill 800T`), is marked film, with the stock taken from the folder name.
+- If a sync would remove more than 20 photos (or 30% of them), it lists them and asks you to type `yes` first. An empty or wrong folder never removes anything.
+- A photo moved to another album loses its `"featured"` mark; set it again if needed.
+
+### Manual steps (if you prefer)
+- `npm run photos -- "F:\Website\Portfolio"` only adds new photos; `npm run upload` uploads them.
+- Home page: set `"featured": true` in `photos.json` (until any are set, the home page shows everything).
+- Album names and menu order: `albums.json`. Albums with no photos are hidden automatically.
+
+## Adding videos
+
+A video entry is like a photo entry, with `"type": "video"`. `file` is the thumbnail image shown in the grid, and `w`/`h` are the video's dimensions. Then either:
+
+- `"video": "renders/porsche.mp4"` - an MP4 you uploaded to R2 (H.264, ideally under ~50 MB), or
+- `"embed": "https://youtu.be/XXXXXXXXXXX"` - a YouTube or Vimeo link (best for long or large videos).
+
+    {
+      "id": "renders-porsche",
+      "type": "video",
+      "file": "renders/porsche-thumb.jpg",
+      "video": "renders/porsche.mp4",
+      "w": 1920, "h": 1080,
+      "album": "renders",
+      "tags": [],
+      "title": "Porsche 911 - Blender",
+      "camera": "Blender, Cycles"
+    }
+
+## Adding photos
+
+One-time setup:
+1. Cloudflare > R2 > create a bucket (e.g. `portfolio-photos`). In its Settings, enable the Public Development URL (r2.dev) and copy it.
+2. Put that URL in `src/data/site.json` as `"imageBase"` (no trailing slash).
+3. R2 > Manage API tokens > Create API token with Object Read & Write on that bucket. Copy `.env.example` to `.env` and fill in the account ID, access key ID, secret and bucket name. `.env` never goes to GitHub.
+
 Each batch (no renaming needed):
 1. Have your Lightroom JPEG exports in folders, one folder per album, e.g. `D:\Exports\Formula Student\`, `D:\Exports\Berlin\`. Sub-folders inside are fine.
 2. Film: anything inside a folder called `Film` (or 35mm / 120 / Analog), or a folder named after a stock (`Portra 400`, `Cinestill 800T`, `Velvia 50`...), is marked as film. The stock name is taken from the folder. Everything else is digital.
